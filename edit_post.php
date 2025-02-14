@@ -3,7 +3,10 @@ include "db.php";
 
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
-    $result = $conn->query("SELECT * FROM posts WHERE id = $id");
+    $stmt = $conn->prepare("SELECT * FROM posts WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $post = $result->fetch_assoc();
 }
 

@@ -4,6 +4,16 @@ if (!isset($_SESSION['user'])){
     header("Location: login.php");
     exit();
 }
+
+$user = $_SESSION['user'];
+$result = $conn->query("SELECT * FROM users WHERE username = $user");
+$row = $result->fetch_assoc();
+$role = $row["role"];
+
+if ($role === "admin"){
+    echo "<a href='add_post.php'>Add New Post</a>";
+}
+
 echo "<h3>Welcome " . $_SESSION['user'] . "!</h3>";
 echo "<a href='logout.php'>Logout</a>";
 ?>

@@ -38,6 +38,9 @@ echo "<a href='logout.php'>Logout</a>";
     while ($row = $result->fetch_assoc()){
         echo "<h3>" . htmlspecialchars($row['title']) . "</h3>";
         echo "<p>{$row['content']}</p>";
+        if ($row['image']){
+            echo "<img src='uploads/{$row['image']}' width='200'>";
+        }
         echo "<a href='edit_post.php?id={$row['id']}'>Edit</a> | ";
         echo "<a href='delete_post.php?id={$row['id']}' class='delete'>Delete</a>";
         echo "<hr>";

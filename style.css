@@ -42,3 +42,8 @@ button:hover {
     color: red;
     text-decoration: none;
 }
+
+a.paginator{
+    margin: 10px;
+    text-decoration: none;
+}

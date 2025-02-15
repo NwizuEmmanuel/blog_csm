@@ -31,6 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Post</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tiny.cloud/1/ae9zzo8jvsnhjx8b12vxazh2kv0sp6ponawym41z8zvwly72/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 </head>
 
 <body>
@@ -42,7 +43,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <button type="submit">Update Post</button>
         </form>
     </div>
-
+    <script>
+        tinymce.init({
+            selector: 'textarea',
+            plugins: 'autolink lists link image charmap preview',
+            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent'
+        });
+    </script>
 </body>
 
 </html>

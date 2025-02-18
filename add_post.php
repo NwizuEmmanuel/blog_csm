@@ -1,22 +1,49 @@
 <?php
 include "db.php";
 session_start();
-$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-
-if ($_POST['csrf_token'] !== $_SESSION['csrf_token']){
-    die("CSRF validation failed.");
-}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $title = $_POST["title"];
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']){
+        die("CSRF validation failed.");
+    }
+
+    $title = htmlspecialchars($_POST["title"], ENT_QUOTES, 'UTF-8');
     $content = $_POST["content"];
-    $content = htmlspecialchars($content);
 
     // handle file upload
-    if ($_FILES['image']['name']) {
-        $image_name = time() . "_" . basename($_FILES['image']['name']);
-        $target = "upload/" . $image_name;
-        move_uploaded_file($_FILES['image']['tmp_name'], $target);
+    if (isset($_FILES["image"]) && $_FILES["image"]["error"] === UPLOAD_ERR_OK) {
+        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
+        $upload_dir = "uploads/";
+
+        // ensure upload directory exists
+        if (!is_dir($upload_dir)){
+            mkdir($upload_dir, 0777, true);
+        }
+
+        // Extract file info
+        $file_name = $_FILES['image']['name'];
+        $file_tmp = $_FILES['image']['tmp_name'];
+        $file_size = $_FILES['image']['size'];
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+        // validate file extension
+        if (!in_array($file_ext, $allowed_extensions)){
+            die("Error: Invalid file type. Allowed: " . implode(", ", $allowed_extensions));
+        }
+
+        // validate file size (limit: 5MB)
+        if ($file_size > 5 * 1024 * 1024){
+            die("Error: File is too large. Max 5MB allowed.");
+        }
+
+        // generate unique filename
+        $image_name = time() . "_" . uniqid() . "." . $file_ext;
+        $target = $upload_dir . $image_name;
+
+        // move file to upload dircetory
+        if(!move_uploaded_file($file_tmp, $target)){
+            die("Error uploading file");
+        }
     } else {
         $image_name = NULL;
     }
@@ -43,19 +70,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </head>
 
 <body>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
+        <?php $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); ?>
         <input type="hidden" name="csrf_token" value="<?=$_SESSION['csrf_token']?>">
         <input type="text" name="title" placeholder="Title" required><br>
-        <textarea name="content" required></textarea><br>
+        <textarea name="content" id="content" required></textarea><br>
         <input type="file" name="image"><br>
         <button type="submit">Add Post</button>
     </form>
     <!-- Place the following <script> and <textarea> tags your HTML's <body> -->
     <script>
         tinymce.init({
-            selector: 'textarea',
+            selector: 'textarea#content',
             plugins: 'autolink lists link image charmap preview',
-            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent'
+            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
+            setup: function(editor){
+                editor.on('change', function(){
+                    tinymce.triggerSave();
+                });
+            }
         });
     </script>
 </body>

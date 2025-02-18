@@ -9,9 +9,10 @@ if (!isset($_SESSION['user'])){
 $post_id = $_POST['post_id'];
 $user_id = $_SESSION['user_id'];
 $content = $_POST['content'];
+$parent_id = $_POST['parent_id'];
 
-$stmt = $conn->prepare("INSERT INTO comments (post_id, user_id, content) VALUES (?,?,?)");
-$stmt->bind_param("iis", $post_id, $user_id, $content);
+$stmt = $conn->prepare("INSERT INTO comments (post_id, parent_id ,user_id, content) VALUES (?,?,?,?)");
+$stmt->bind_param("iiis", $post_id, $parent_id ,$user_id, $content);
 $stmt->execute();
 
 header("Location: index.php");

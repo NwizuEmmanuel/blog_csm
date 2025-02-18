@@ -1,5 +1,6 @@
 <?php
 include "db.php";
+session_start();
 
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
@@ -11,8 +12,11 @@ if (isset($_GET['id'])) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if ($_SESSION['csrf_token'] !== $_POST['csrf_token']){
+        die("CSRF validation failed.");
+    }
     $id = $_POST["id"];
-    $title = $_POST['title'];
+    $title = htmlspecialchars($_POST['title']);
     $content = $_POST['content'];
 
     $stmt = $conn->prepare("UPDATE posts SET title=?, content = ? WHERE id = ?");
@@ -37,17 +41,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="container">
         <form method="POST">
+            <?php $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); ?>
+            <input type="hidden" value="<?= $_SESSION['csrf_token']?>" name='csrf_token'>
             <input type="hidden" name="id" value="<?= $post['id'] ?>">
             <input type="text" name="title" required placeholder="Post Title" value="<?= $post['title'] ?>">
-            <textarea name="content" required placeholder="Post Content"><?= $post['content'] ?></textarea>
+            <textarea name="content" id="content" required placeholder="Post Content"><?= $post['content'] ?></textarea>
             <button type="submit">Update Post</button>
         </form>
     </div>
     <script>
         tinymce.init({
-            selector: 'textarea',
+            selector: 'textarea#content',
             plugins: 'autolink lists link image charmap preview',
-            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent'
+            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
+            setup: function(editor){
+                editor.on('change', function(){
+                    tinymce.triggerSave();
+                });
+            }
         });
     </script>
 </body>

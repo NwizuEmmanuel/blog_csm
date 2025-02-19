@@ -46,6 +46,13 @@ echo "<a href='logout.php'>Logout</a>";
         <div>
             <?php echo $row['content']; ?>
         </div>
+        <div>
+            <p><?php echo $row['total_likes'] . " like" . " | " . $row["total_unlikes"] . " unlike" ?></p>
+        </div>  
+        <div>
+            <a href="like_post.php?post_id=<?= $row["id"] ?>">Like</a>
+            <a href="unlike_post.php?post_id=<?= $row["id"] ?>">Dislike</a>
+        </div>
         <?php if ($role === "admin") : ?>
             <?= "<a href='edit_post.php?id={$row['id']}'>Edit</a> | "; ?>
             <?= "<a href='delete_post.php?id={$row['id']}' class='delete'>Delete</a>"; ?>
@@ -64,13 +71,7 @@ echo "<a href='logout.php'>Logout</a>";
             <?php $user_result = $conn->query("SELECT id,username FROM users WHERE id = {$comment['user_id']}"); ?>
             <?php $username = $user_result->fetch_assoc(); ?>
             <?php $username = $username["username"]; ?>
-            <div>
-                <span><?= $comment['total_likes'] . " likes"?></span>
-                <span><?= $comment['total_dislike'] . " dislikes" ?></span>
-            </div>
             <?php echo "<p><strong>{$username}: </strong> {$comment['content']}</p>"; ?>
-            <a href="like_comment.php?id=<?= $comment["id"] ?>&parent_id=<?= $comment["parent_id"] ?>">Like</a>
-            <a href="dislike_comment.php?id=<?= $comment["id"] ?>&parent_id=<?= $comment["parent_id"] ?>">Dislike</a>
             <!-- reply button -->
             <form action="add_comment.php" method="post">
                 <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
